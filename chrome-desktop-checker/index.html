@@ -23,14 +23,23 @@
             uaData: document.querySelector('user-agent-data'),
         }
 
-        if (isChromeDesktop()) ui.result.innerText = 'This is a Chrome Desktop!';
-        else ui.result.innerText = 'NOT A CHROME DESKTOP';
+        if (isChromeDesktop()) ui.result.innerHTML = '<p>This is a Chrome Desktop!</p>';
+        else ui.result.innerHTML = '<p>NOT A CHROME DESKTOP</p>';
+
+        if (isClientMobile()) ui.result.innerHTML += '<p>This is NOT mobile</p>';
+        else ui.result.innerHTML += '<p>THIS IS A MOBILE DEVICE</p>';
 
         // ----------------------
         // HELPER FUNCTION
         // ----------------------
         function isChromeDesktop() {
             return window.chrome && window.chrome.runtime
+        }
+
+        function isClientMobile() {
+            // Sniff User Agent
+            const mobileDevice = /Android|webOS|iPhone|iPad|iPod|Blackberry|Windows Phone|IEMobile|Opera Mini|Mobi/i;
+            return mobileDevice.test(navigator.userAgent);
         }
     </script>
 </body>
