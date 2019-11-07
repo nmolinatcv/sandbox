@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
+
+    <style>
+        h1 {
+            text-decoration: underline;
+        }
+        .user-agent-data h3 {
+            text-decoration: underline;
+            margin: 25px 0 0 0;
+        }
+    </style>
 </head>
 <body>
     <h1>Chrome Desktop Checker</h1>
@@ -14,13 +24,13 @@
     </div>
 
     <div class="user-agent-data">
-
+        <h3>User Agent Data</h3>
     </div>
 
     <script>
         const ui = {
             result: document.querySelector('.result'),
-            uaData: document.querySelector('user-agent-data'),
+            uaData: document.querySelector('.user-agent-data'),
         }
 
         if (isChromeDesktop()) ui.result.innerHTML = '<p>This is a Chrome Desktop!</p>';
@@ -28,6 +38,8 @@
 
         if (isClientMobile()) ui.result.innerHTML += '<p>THIS IS A MOBILE DEVICE</p>';
         else ui.result.innerHTML += '<p>This is NOT mobile</p>';
+
+        ui.uaData.innerHTML += navigator.userAgent;
 
         // ----------------------
         // HELPER FUNCTION
