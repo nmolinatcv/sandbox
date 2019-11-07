@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Chrome Desktop Checker</h1>
+
+    <div class="result">
+
+    </div>
+
+    <div class="user-agent-data">
+
+    </div>
+
+    <script>
+        const ui = {
+            result: document.querySelector('.result'),
+            uaData: document.querySelector('user-agent-data'),
+        }
+
+        if (isChromeDesktop()) result.innerText = 'This is a Chrome Desktop!';
+        else result.innerText = 'NOT A CHROME DESKTOP';
+
+        // ----------------------
+        // HELPER FUNCTION
+        // ----------------------
+        function isChromeDesktop() {
+            return window.chrome && window.chrome.runtime
+        }
+    </script>
+</body>
+</html>
