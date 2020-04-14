@@ -43,7 +43,7 @@
         function render(e) {
             method.innerHTML = e.type;
             keyCode.innerHTML = e.keyCode;
-            keyValue.innerHTML = `key: ${e.key}`;
+            keyValue.innerHTML = `key: "${e.key}"`;
             keyMod.innerHTML = '';
             if (e.shiftKey) keyMod.innerHTML = 'modifier: shift';
             if (e.ctrlKey) keyMod.innerHTML = 'modifier: ctrl';
