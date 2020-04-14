@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <style>
+        .key-info {
+            text-align: center;
+            margin-top: 10vh;
+            font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .key-code {
+            font-size: 100px;
+        }
+    </style>
+</head>
+<body>
+
+
+    <div class="key-info">
+        <div class="key-code"></div>
+        <div class="key-mods">
+            <small>
+                <div class="key-value"></div>
+                <div class="active-mod"></div>
+                <div class="method"></div>
+            </small>
+
+        </div>
+    </div>
+
+    <script>
+        const keyCode = document.querySelector('.key-code');
+        const keyValue = document.querySelector('.key-value');
+        const keyMod = document.querySelector('.active-mod');
+        const method = document.querySelector('.method');
+
+        document.addEventListener('keyup', render);
+        document.addEventListener('keydown', render);
+
+        function render(e) {
+            method.innerHTML = e.type;
+            keyCode.innerHTML = e.keyCode;
+            keyValue.innerHTML = `key: ${e.key}`;
+            keyMod.innerHTML = '';
+            if (e.shiftKey) keyMod.innerHTML = 'modifier: shift';
+            if (e.ctrlKey) keyMod.innerHTML = 'modifier: ctrl';
+            if (e.altKey) keyMod.innerHTML = 'modifier: alt';
+            console.log(e.returnValue, e);
+        }
+    </script>
+</body>
+</html>
