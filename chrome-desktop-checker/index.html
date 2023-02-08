@@ -7,6 +7,9 @@
     <title>Document</title>
 
     <style>
+        body {
+            font-family: monospace;
+        }
         h1 {
             text-decoration: underline;
         }
@@ -46,12 +49,12 @@
 
         ui.uaData.innerHTML += navigator.userAgent;
 
-        displayWindowInnerWidth();
+        displayWindowInnerDimensions();
         
         // ----------------------
         // EVENT LISTENERS
         // ----------------------
-        window.addEventListener('resize', (e) => displayWindowInnerWidth());
+        window.addEventListener('resize', (e) => displayWindowInnerDimensions());
 
         // ----------------------
         // HELPER FUNCTION
@@ -66,9 +69,10 @@
             return mobileDevice.test(navigator.userAgent);
         }
 
-        function displayWindowInnerWidth() {
-            ui.windowInnerWidth.innerHTML += `
-            <p>${window.innerWidth}px</p>
+        function displayWindowInnerDimensions() {
+            ui.windowInnerWidth.innerHTML = `
+            <p><strong>InnerWidth:</strong>${window.innerWidth}px</p>
+            <p><strong>InnerHeight:</strong>${window.innerHeight}px</p>
         `;
         }
     </script>
