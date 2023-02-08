@@ -7,10 +7,13 @@
     <title>Document</title>
 
     <style>
+        body {
+            font-family: monospace;
+        }
         h1 {
             text-decoration: underline;
         }
-        .user-agent-data h3 {
+        h3 {
             text-decoration: underline;
             margin: 25px 0 0 0;
         }
@@ -26,11 +29,14 @@
     <div class="user-agent-data">
         <h3>User Agent Data</h3>
     </div>
+    
+    <div class="window-inner-dimensions"></div>
 
     <script>
         const ui = {
             result: document.querySelector('.result'),
             uaData: document.querySelector('.user-agent-data'),
+            windowInnerDimensions: document.querySelector('.window-inner-dimensions'),
         }
 
         if (isChromeDesktop()) ui.result.innerHTML = '<p>This is a Chrome Desktop!</p>';
@@ -40,6 +46,13 @@
         else ui.result.innerHTML += '<p>This is NOT mobile</p>';
 
         ui.uaData.innerHTML += navigator.userAgent;
+
+        displayWindowInnerDimensions();
+        
+        // ----------------------
+        // EVENT LISTENERS
+        // ----------------------
+        window.addEventListener('resize', (e) => displayWindowInnerDimensions());
 
         // ----------------------
         // HELPER FUNCTION
@@ -52,6 +65,26 @@
             // Sniff User Agent
             const mobileDevice = /Android|webOS|iPhone|iPad|iPod|Blackberry|Windows Phone|IEMobile|Opera Mini|Mobi/i;
             return mobileDevice.test(navigator.userAgent);
+        }
+
+        function displayWindowInnerDimensions() {
+            ui.windowInnerDimensions.innerHTML = `
+            <h3>Window Inner Dimensions</h3>
+            <p>
+                <strong>window.innerWidth: &emsp;</strong>${window.innerWidth}px
+                <br>
+                <strong>window.innerHeight:&emsp;</strong>${window.innerHeight}px
+            </p>
+            <p>
+                <strong>window.screen.width: &emsp;</strong>${window.screen.width}px
+                <br>
+                <strong>window.screen.height:&emsp;</strong>${window.screen.height}px
+            </p>
+            
+            <p>
+                <strong>Is Mobile:&emsp;</strong>${Math.min(window.screen.width, window.screen.height) < 768 || navigator.userAgent.indexOf("Mobi") > -1;}
+            </p>
+        `;
         }
     </script>
 </body>
