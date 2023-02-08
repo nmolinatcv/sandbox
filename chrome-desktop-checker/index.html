@@ -69,7 +69,7 @@
 
         function displayWindowInnerDimensions() {
             ui.windowInnerDimensions.innerHTML = `
-            <h3>Window Inner Dimensions</h3>
+            <h3>Window Dimensions</h3>
             <p>
                 <strong>window.innerWidth: &emsp;</strong>${window.innerWidth}px
                 <br>
@@ -82,7 +82,7 @@
             </p>
             
             <p>
-                <strong>Is Mobile:&emsp;</strong>${Math.min(window.screen.width, window.screen.height) < 768 || navigator.userAgent.indexOf("Mobi") > -1;}
+                <strong>Is Mobile:&emsp;</strong>${Math.min(window.screen.width, window.screen.height) < 768 || navigator.userAgent.indexOf("Mobi") > -1}
             </p>
         `;
         }
