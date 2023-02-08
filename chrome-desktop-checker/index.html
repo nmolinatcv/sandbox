@@ -30,15 +30,13 @@
         <h3>User Agent Data</h3>
     </div>
     
-    <div class="window-inner-width">
-        <h3>Window Inner Width</h3>
-    </div>
+    <div class="window-inner-dimensions"></div>
 
     <script>
         const ui = {
             result: document.querySelector('.result'),
             uaData: document.querySelector('.user-agent-data'),
-            windowInnerWidth: document.querySelector('.window-inner-width'),
+            windowInnerDimensions: document.querySelector('.window-inner-dimensions'),
         }
 
         if (isChromeDesktop()) ui.result.innerHTML = '<p>This is a Chrome Desktop!</p>';
@@ -70,9 +68,10 @@
         }
 
         function displayWindowInnerDimensions() {
-            ui.windowInnerWidth.innerHTML = `
-            <p><strong>InnerWidth:</strong>${window.innerWidth}px</p>
-            <p><strong>InnerHeight:</strong>${window.innerHeight}px</p>
+            ui.windowInnerDimensions.innerHTML = `
+            <h3>Window Inner Dimensions</h3>
+            <p><strong>Width: &emsp;</strong>${window.innerWidth}px</p>
+            <p><strong>Height:&emsp;</strong>${window.innerHeight}px</p>
         `;
         }
     </script>
