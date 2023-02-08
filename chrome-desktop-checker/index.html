@@ -90,7 +90,9 @@
             <br>
             <br>
 
-            <strong>Is Mobile:&emsp;</strong>${isMobile}
+            <strong>Is Mobile:&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;${isMobile}</strong>
+            <br>ScreenSizeTest: &emsp;&emsp;${Math.min(window.screen.width, window.screen.height) < 768}
+            <br>UserSniffingTest:&emsp;${mobileDevice.test(navigator.userAgent)}
         `;
         }
     </script>
