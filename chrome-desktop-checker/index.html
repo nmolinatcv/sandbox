@@ -38,6 +38,10 @@
 
         if (isClientMobile()) ui.result.innerHTML += '<p>THIS IS A MOBILE DEVICE</p>';
         else ui.result.innerHTML += '<p>This is NOT mobile</p>';
+        
+        ui.result.innerHTML += `
+            <p>window.innerWidth: ${window.innerWidth}</p>
+        `;
 
         ui.uaData.innerHTML += navigator.userAgent;
 
