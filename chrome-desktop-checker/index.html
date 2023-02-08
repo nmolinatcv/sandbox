@@ -39,13 +39,13 @@
             windowInnerDimensions: document.querySelector('.window-inner-dimensions'),
         }
 
-        if (isChromeDesktop()) ui.result.innerHTML = '<p>This is a Chrome Desktop!</p>';
-        else ui.result.innerHTML = '<p>NOT A CHROME DESKTOP</p>';
+        if (isChromeDesktop()) ui.result.innerHTML = '<p>This is a Chrome Desktop! <a href="https://groups.google.com/a/chromium.org/g/chromium-extensions/c/tCWVZRq77cg/m/KB6-tvCdAgAJ")><small>(No longer valid)</small></a></p>';
+        else ui.result.innerHTML = '<p>NOT A CHROME DESKTOP <a href="https://groups.google.com/a/chromium.org/g/chromium-extensions/c/tCWVZRq77cg/m/KB6-tvCdAgAJ")><small>(No longer valid)</small></a></p>';
 
         if (isClientMobile()) ui.result.innerHTML += '<p>THIS IS A MOBILE DEVICE</p>';
         else ui.result.innerHTML += '<p>This is NOT mobile</p>';
 
-        ui.uaData.innerHTML += navigator.userAgent;
+        ui.uaData.innerHTML += `<br> ${navigator.userAgent}`;
 
         displayWindowInnerDimensions();
         
@@ -68,22 +68,29 @@
         }
 
         function displayWindowInnerDimensions() {
+            // Check screen size and Sniff User Agent
+            const mobileDevice = /Android|webOS|iPhone|iPad|iPod|Blackberry|Windows Phone|IEMobile|Opera Mini|Mobi/i;
+            const isMobile = Math.min(window.screen.width, window.screen.height) < 768 || mobileDevice.test(navigator.userAgent);
+
             ui.windowInnerDimensions.innerHTML = `
             <h3>Window Dimensions</h3>
-            <p>
-                <strong>window.innerWidth: &emsp;</strong>${window.innerWidth}px
-                <br>
-                <strong>window.innerHeight:&emsp;</strong>${window.innerHeight}px
-            </p>
-            <p>
-                <strong>window.screen.width: &emsp;</strong>${window.screen.width}px
-                <br>
-                <strong>window.screen.height:&emsp;</strong>${window.screen.height}px
-            </p>
+            <br>
             
-            <p>
-                <strong>Is Mobile:&emsp;</strong>${Math.min(window.screen.width, window.screen.height) < 768 || navigator.userAgent.indexOf("Mobi") > -1}
-            </p>
+            <strong>window.innerWidth: &emsp;&emsp;&emsp;</strong>${window.innerWidth}px
+            <br>
+            <strong>window.innerHeight:&emsp;&emsp;&emsp;</strong>${window.innerHeight}px
+
+            <br>
+            <br>
+
+            <strong>window.screen.width: &emsp;</strong>${window.screen.width}px
+            <br>
+            <strong>window.screen.height:&emsp;</strong>${window.screen.height}px
+
+            <br>
+            <br>
+
+            <strong>Is Mobile:&emsp;</strong>${isMobile}
         `;
         }
     </script>
