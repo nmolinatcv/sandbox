@@ -20,7 +20,7 @@
     </style>
 </head>
 <body>
-    <h1>Chrome Desktop Checker</h1>
+    <h1><s>Chrome Desktop</s> Mobile Checker</h1>
 
     <div class="result">
 
@@ -38,9 +38,10 @@
             uaData: document.querySelector('.user-agent-data'),
             windowInnerDimensions: document.querySelector('.window-inner-dimensions'),
         }
+        const notValidLink = '<a href="https://groups.google.com/a/chromium.org/g/chromium-extensions/c/tCWVZRq77cg/m/KB6-tvCdAgAJ") target="_blank"><small>(No longer valid)</small></a>';
 
-        if (isChromeDesktop()) ui.result.innerHTML = '<p>This is a Chrome Desktop! <a href="https://groups.google.com/a/chromium.org/g/chromium-extensions/c/tCWVZRq77cg/m/KB6-tvCdAgAJ")><small>(No longer valid)</small></a></p>';
-        else ui.result.innerHTML = '<p>NOT A CHROME DESKTOP <a href="https://groups.google.com/a/chromium.org/g/chromium-extensions/c/tCWVZRq77cg/m/KB6-tvCdAgAJ")><small>(No longer valid)</small></a></p>';
+        if (isChromeDesktop()) ui.result.innerHTML = `<p>This is a Chrome Desktop! ${notValidLink}</p>`;
+        else ui.result.innerHTML = `<p>NOT A CHROME DESKTOP  ${notValidLink}</p>`;
 
         if (isClientMobile()) ui.result.innerHTML += '<p>THIS IS A MOBILE DEVICE</p>';
         else ui.result.innerHTML += '<p>This is NOT mobile</p>';
