@@ -36,6 +36,17 @@
             margin-bottom: 5px;
         }
 
+        .input-group small {
+            display: block;
+            color: #778;
+            margin-top: -3px;
+            margin-bottom: 5px;
+
+            a {
+                color: #778;
+            }
+        }
+
         .button-group {
             margin-top: 20px;
             display: flex;
@@ -150,7 +161,8 @@
         
         <div class="input-group">
             <label for="stringReplace">Replace 'meteor_css' with:</label>
-            <input type="text" id="stringReplace" placeholder="Enter replacement string">
+            <small><em>Visit <a href="https://tcvsourcer.com">tcvsourcer.com</a>, check source "head" for a "__meteor-css__" link and copy the latest cdn address.</em></small>
+            <input type="text" id="stringReplace" placeholder="https://d1rym8bq3stc0j.cloudfront.net/3f55af0f1fc66048caaf2d8c412a4548787e00a4.css?meteor_css_resource=true">
         </div>
         
         <div class="button-group">
