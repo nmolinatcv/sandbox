@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RRWeb Viewer</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/style.css"/>
+
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: Arial, sans-serif;
+            max-width: 1024px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .controls {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .input-group {
+            margin: 10px 0;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .button-group {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        button:hover:not(:disabled) {
+            background-color: #0056b3;
+        }
+
+        #replayer {
+            width: 100%;
+            height: 600px;
+            margin-top: 20px;
+        }
+
+        #stringReplace {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: white;
+            margin: 50px auto;
+            padding: 20px;
+            width: 80%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            border-radius: 8px;
+        }
+
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .preview-item {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+        }
+
+        .preview-item pre {
+            margin: 5px 0;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .old-value {
+            color: #dc3545;
+        }
+
+        .new-value {
+            color: #28a745;
+        }
+
+        .no-changes {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .preview-count {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Session Replayer</h1>
+    
+    <div class="controls">
+        <div class="input-group">
+            <label for="fileInput">Upload Recording JSON:</label>
+            <input type="file" id="fileInput" accept=".json">
+        </div>
+        
+        <div class="input-group">
+            <label for="stringReplace">Replace 'meteor_css' with:</label>
+            <input type="text" id="stringReplace" placeholder="Enter replacement string">
+        </div>
+        
+        <div class="button-group">
+            <button id="replaceButton" disabled>Replace Strings</button>
+            <button id="downloadButton" disabled>Download Modified JSON</button>
+        </div>
+    </div>
+
+    <!-- Preview Modal -->
+    <div id="previewModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Preview Changes</h2>
+            <div id="previewContent"></div>
+            <div class="button-group">
+                <button id="applyChanges">Apply Changes</button>
+                <button id="cancelChanges">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="replayer"></div>
+
+    <!-- rrweb scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/index.js"></script>
+
+    <!-- logic -->
+    <script>
+        let currentEvents = null;
+        let modifiedEvents = null;
+        let replayer = null;
+        let previewChanges = [];
+
+        // --------------------------------
+        // EVENT HANDLERS
+        // --------------------------------
+        // File upload handling
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        currentEvents = JSON.parse(e.target.result);
+                        initializePlayer(currentEvents);
+                        document.getElementById('replaceButton').disabled = false;
+                    } catch (error) {
+                        console.error('Error parsing JSON:', error);
+                        alert('Error parsing JSON file. Please make sure it\'s a valid recording file.');
+                    }
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        document.getElementById('replaceButton').addEventListener('click', function() {
+            if (!currentEvents || !document.getElementById('stringReplace').value) return;
+
+            previewChanges = findChanges(currentEvents);
+            showPreviewModal(previewChanges);
+        });
+
+        // Modal controls
+        document.querySelector('.close').addEventListener('click', function() {
+            document.getElementById('previewModal').style.display = 'none';
+        });
+
+        document.getElementById('cancelChanges').addEventListener('click', function() {
+            document.getElementById('previewModal').style.display = 'none';
+        });
+
+        document.getElementById('applyChanges').addEventListener('click', function() {
+            applyChanges();
+            document.getElementById('previewModal').style.display = 'none';
+        });
+
+        // Download modified JSON
+        document.getElementById('downloadButton').addEventListener('click', function() {
+            if (!modifiedEvents) return;
+
+            const dataStr = JSON.stringify(modifiedEvents, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            
+            const downloadLink = document.createElement('a');
+            downloadLink.href = url;
+            downloadLink.download = 'modified_recording.json';
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+            URL.revokeObjectURL(url);
+        });
+
+        // --------------------------------
+        // HELPER FUNCTIONS
+        // --------------------------------
+        function initializePlayer(events) {
+            // Destroy existing player if it exists
+            if (replayer) {
+                replayer.pause();
+                document.querySelector('#replayer').innerHTML = '';
+            }
+
+            // Create new player
+            replayer = new rrwebPlayer({
+                target: document.querySelector('#replayer'),
+                props: {
+                    events: events.data.snapshots,
+                },
+            });
+
+            replayer.play();
+        }
+
+        // Apply changes
+        function applyChanges() {
+            const replacementString = document.getElementById('stringReplace').value;
+            if (!currentEvents) return;
+
+            // Deep clone the events
+            modifiedEvents = JSON.parse(JSON.stringify(currentEvents));
+
+            // Replace strings containing "meteor_css" and update meteor-css link elements
+            const replaceInObject = (obj) => {
+                for (let key in obj) {
+                    if (typeof obj[key] === 'string' && obj[key].includes('meteor_css')) {
+                        obj[key] = replacementString;
+                    } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+                        // Check for meteor-css link elements
+                        if (obj.tagName === 'link' && 
+                            obj.attributes && 
+                            obj.attributes.class === '__meteor-css__') {
+                            obj.attributes.href = replacementString;
+                        }
+                        replaceInObject(obj[key]);
+                    }
+                }
+            };
+
+            replaceInObject(modifiedEvents);
+            
+            // Reinitialize player with modified events
+            initializePlayer(modifiedEvents);
+            document.getElementById('downloadButton').disabled = false;
+        }
+
+        function showPreviewModal(changes) {
+            const modal = document.getElementById('previewModal');
+            const content = document.getElementById('previewContent');
+            modal.style.display = 'block';
+
+            if (changes.length === 0) {
+                content.innerHTML = '<div class="no-changes">No changes to preview. No strings containing "meteor_css" or elements with class "__meteor-css__" were found.</div>';
+                return;
+            }
+
+            content.innerHTML = `
+                <div class="preview-count">
+                    Found ${changes.length} item${changes.length === 1 ? '' : 's'} to replace
+                </div>
+                ${changes.map((change, index) => `
+                    <div class="preview-item">
+                        <strong>Location:</strong> ${change.path}
+                        <pre class="old-value">- ${change.oldValue}</pre>
+                        <pre class="new-value">+ ${change.newValue}</pre>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        // Preview changes
+        function findChanges(obj, path = '') {
+            const changes = new Map(); // Use Map to track unique paths
+            const replacementString = document.getElementById('stringReplace').value;
+
+            function traverse(obj, path) {
+                if (!obj || typeof obj !== 'object') return;
+
+                // Handle link elements with meteor-css class
+                if (obj.tagName === 'link' && 
+                    obj.attributes && 
+                    obj.attributes.class === '__meteor-css__') {
+                    changes.set(path + '.attributes.href', {
+                        path: path + '.attributes.href',
+                        oldValue: obj.attributes.href,
+                        newValue: replacementString
+                    });
+                }
+
+                // Check all properties
+                for (let key in obj) {
+                    const currentPath = path ? `${path}.${key}` : key;
+                    
+                    if (typeof obj[key] === 'string' && obj[key].includes('meteor_css')) {
+                        changes.set(currentPath, {
+                            path: currentPath,
+                            oldValue: obj[key],
+                            newValue: replacementString
+                        });
+                    }
+                    if (obj[key] && typeof obj[key] === 'object') {
+                        traverse(obj[key], currentPath);
+                    }
+                }
+            }
+
+            traverse(obj, path);
+            return Array.from(changes.values());
+        }
+    </script>
+</body>
+</html>
