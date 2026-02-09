@@ -10,3 +10,6 @@ This repo will a hold a few small tools that can be hosted on github pages and r
 
 - **[Keypress Checker](https://nmolinatcv.github.io/sandbox/keypress-checker/index.html)**  
     Tool for checking what buttons were pressed.
+
+- **[Paste Debug](https://nmolinatcv.github.io/sandbox/paste-debug/index.html)**  
+    Diagnoses paste issues when pasting into Sourcer. Built to debug Outlook-on-Windows clipboard behavior: inspects clipboard HTML/plain text and character codes (e.g. bullet chars).
