@@ -7,20 +7,24 @@
   <style>
     body { font-family: system-ui; padding: 20px; max-width: 800px; }
     #pasteTarget { border: 1px solid #ccc; min-height: 120px; padding: 12px; margin: 12px 0; width: 100%; resize: vertical; box-sizing: border-box; }
-    .well { font-family: monospace; font-size: 12px; white-space: pre-wrap; background: #f5f5f5; border: 1px solid #ddd; padding: 12px; margin: 8px 0; border-radius: 4px; overflow-x: auto; }
-    #pastHtml { max-height: 300px; overflow-y: auto; }
+    .well { font-family: monospace; font-size: 12px; white-space: pre-wrap; background: #f5f5f5; border: 1px solid #ddd; padding: 12px; margin: 8px 0; border-radius: 4px; overflow-x: auto; max-height: 300px; overflow-y: auto; }
     #htmlRendered { min-height: 120px; width: 100%; display: block; }
-    #downloadJson { padding: 8px 14px; border: 1px solid #ccc; border-radius: 4px; background: #f5f5f5; cursor: pointer; font-size: 14px; }
-    #downloadJson:hover:not(:disabled) { background: #e8e8e8; }
-    #downloadJson:disabled { opacity: 0.5; cursor: not-allowed; }
+    #downloadJson, #copyJson, #clear { padding: 8px 14px; border: 1px solid #ccc; border-radius: 4px; background: #f5f5f5; cursor: pointer; font-size: 14px; }
+    #downloadJson:hover:not(:disabled), #copyJson:hover:not(:disabled), #clear:hover { background: #e8e8e8; }
+    #downloadJson:disabled, #copyJson:disabled { opacity: 0.5; cursor: not-allowed; }
+    #downloadJson, #copyJson, #clear { margin-right: 8px; }
   </style>
 </head>
 <body>
   <h1>Paste debug</h1>
   <p>Paste from any app (Outlook, Word, etc.) in the box below. Character analysis will appear under it.</p>
   <textarea id="pasteTarget" placeholder="Paste here…"></textarea>
+  <p>
+    <button id="downloadJson" type="button" disabled>Download JSON</button>
+    <button id="copyJson" type="button" disabled>Copy JSON</button>
+    <button id="clear" type="button">Clear</button>
+  </p>
   <h2>Pasted content</h2>
-  <p><button id="downloadJson" type="button" disabled>Download JSON</button></p>
   <h3>Plain text</h3>
   <pre id="pastPlain" class="well">(paste to see)</pre>
   <h3>HTML (raw)</h3>

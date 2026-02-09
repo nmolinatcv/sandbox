@@ -17,9 +17,24 @@ function wrapHtml(html) {
   return '<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>' + html + '</body></html>';
 }
 
+function getExportData() {
+  if (!lastPasteData) return null;
+  return {
+    ...lastPasteData,
+    environment: {
+      userAgent: navigator.userAgent,
+      platform: navigator.platform,
+      language: navigator.language,
+      screenWidth: window.screen?.width,
+      screenHeight: window.screen?.height,
+    },
+  };
+}
+
 function downloadJson() {
-  if (!lastPasteData) return;
-  const blob = new Blob([JSON.stringify(lastPasteData, null, 2)], { type: 'application/json' });
+  const data = getExportData();
+  if (!data) return;
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'paste-debug-' + new Date().toISOString().slice(0, 19).replace(/:/g, '-') + '.json';
@@ -27,7 +42,28 @@ function downloadJson() {
   URL.revokeObjectURL(a.href);
 }
 
+function copyJson() {
+  const data = getExportData();
+  if (!data) return;
+  navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+}
+
+function clearAll() {
+  lastPasteData = null;
+  document.getElementById('pastPlain').textContent = '(paste to see)';
+  document.getElementById('pastHtml').textContent = '(paste to see)';
+  document.getElementById('htmlRendered').srcdoc = '';
+  document.getElementById('output').textContent = '(paste to see)';
+  document.getElementById('downloadJson').disabled = true;
+  document.getElementById('copyJson').disabled = true;
+  document.getElementById('pasteTarget').value = '';
+  document.getElementById('pasteTarget').focus();
+}
+
 document.getElementById('downloadJson').addEventListener('click', downloadJson);
+document.getElementById('copyJson').addEventListener('click', copyJson);
+document.getElementById('clear').addEventListener('click', clearAll);
+document.getElementById('pasteTarget').focus();
 
 document.getElementById('pasteTarget').addEventListener('paste', (e) => {
   e.preventDefault();
@@ -82,4 +118,5 @@ document.getElementById('pasteTarget').addEventListener('paste', (e) => {
     analysis: out.join('\n'),
   };
   document.getElementById('downloadJson').disabled = false;
+  document.getElementById('copyJson').disabled = false;
 });
