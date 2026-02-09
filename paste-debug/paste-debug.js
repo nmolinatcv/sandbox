@@ -11,10 +11,45 @@ const specialChars = {
 
 let lastPasteData = null;
 
+function getHtmlTree(html) {
+  if (!html?.trim()) return '(empty)';
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    const lines = [];
+    const maxDepth = 20;
+
+    function traverse(el, prefix, isLast, depth) {
+      if (depth > 20 || el.nodeType !== 1) return;
+      const tag = el.tagName.toLowerCase();
+      const connector = isLast ? '└─ ' : '├─ ';
+      lines.push(prefix + connector + tag);
+      const childPrefix = prefix + (isLast ? '   ' : '│  ');
+      const children = el.children;
+      for (let i = 0; i < children.length && lines.length < 500; i++) {
+        traverse(children[i], childPrefix, i === children.length - 1, depth + 1);
+      }
+    }
+
+    const body = doc.body;
+    if (!body?.children?.length) return '(empty)';
+    const roots = body.children;
+    for (let i = 0; i < roots.length && lines.length < 500; i++) {
+      traverse(roots[i], '', i === roots.length - 1, 0);
+    }
+    return lines.join('\n') || '(empty)';
+  } catch {
+    return '(parse error)';
+  }
+}
+
 function wrapHtml(html) {
   const trimmed = html.trim();
-  if (/^<!DOCTYPE/i.test(trimmed) || /^<html/i.test(trimmed)) return html;
-  return '<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>' + html + '</body></html>';
+  const constrainStyle = '<style>body{max-width:100%;overflow-x:auto;box-sizing:border-box}*{box-sizing:inherit}</style>';
+  if (/^<!DOCTYPE/i.test(trimmed) || /^<html/i.test(trimmed)) {
+    return trimmed.includes('</head>') ? html.replace('</head>', constrainStyle + '</head>') : constrainStyle + html;
+  }
+  return '<!DOCTYPE html><html><head><meta charset="utf-8">' + constrainStyle + '</head><body>' + html + '</body></html>';
 }
 
 function getExportData() {
@@ -48,11 +83,57 @@ function copyJson() {
   navigator.clipboard.writeText(JSON.stringify(data, null, 2));
 }
 
+function populateFromData(data) {
+  const text = data.plainText ?? '';
+  const html = data.html ?? '';
+  const analysis = data.analysis ?? '';
+
+  document.getElementById('pastPlain').textContent = text || '(empty)';
+  document.getElementById('pastHtml').textContent = html || '(empty)';
+  document.getElementById('pastHtmlTree').textContent = getHtmlTree(html);
+  document.getElementById('output').textContent = analysis || '(empty)';
+
+  const iframe = document.getElementById('htmlRendered');
+  iframe.srcdoc = html ? wrapHtml(html) : '<p style="color:#999">(empty)</p>';
+  iframe.classList.toggle('empty', !html);
+
+  lastPasteData = { ...data, plainText: text, html, analysis };
+  document.getElementById('downloadJson').disabled = false;
+  document.getElementById('copyJson').disabled = false;
+}
+
+function importJson() {
+  const input = document.getElementById('importFile');
+  input.value = '';
+  input.click();
+}
+
+document.getElementById('importFile').addEventListener('change', (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      if (!data.plainText && !data.html && !data.analysis) {
+        throw new Error('Invalid format: missing plainText, html, or analysis');
+      }
+      populateFromData(data);
+    } catch (err) {
+      alert('Invalid JSON or format: ' + (err.message || 'parse error'));
+    }
+  };
+  reader.readAsText(file);
+});
+
 function clearAll() {
   lastPasteData = null;
   document.getElementById('pastPlain').textContent = '(paste to see)';
   document.getElementById('pastHtml').textContent = '(paste to see)';
-  document.getElementById('htmlRendered').srcdoc = '';
+  document.getElementById('pastHtmlTree').textContent = '(paste to see)';
+  const iframe = document.getElementById('htmlRendered');
+  iframe.srcdoc = '';
+  iframe.classList.add('empty');
   document.getElementById('output').textContent = '(paste to see)';
   document.getElementById('downloadJson').disabled = true;
   document.getElementById('copyJson').disabled = true;
@@ -62,24 +143,14 @@ function clearAll() {
 
 document.getElementById('downloadJson').addEventListener('click', downloadJson);
 document.getElementById('copyJson').addEventListener('click', copyJson);
+document.getElementById('importJson').addEventListener('click', importJson);
 document.getElementById('clear').addEventListener('click', clearAll);
 document.getElementById('pasteTarget').focus();
 
-document.getElementById('pasteTarget').addEventListener('paste', (e) => {
-  e.preventDefault();
-  const html = e.clipboardData?.getData('text/html') || '';
-  const text = e.clipboardData?.getData('text/plain') || '';
+function buildAnalysis(text, html, clipboardTypes) {
   const isMsOffice = html.includes('urn:schemas-microsoft-com:office');
-
-  document.getElementById('pastPlain').textContent = text || '(empty)';
-  document.getElementById('pastHtml').textContent = html || '(empty)';
-
-  const iframe = document.getElementById('htmlRendered');
-  iframe.srcdoc = html ? wrapHtml(html) : '<p style="color:#999">(empty)</p>';
-
-  const types = [...(e.clipboardData?.types || [])].join(', ') || '(none)';
   const lines = text.split('\n');
-  const out = ['Clipboard types: ' + types];
+  const out = ['Clipboard types: ' + clipboardTypes];
   out.push('Plain text length: ' + text.length);
   out.push('HTML length: ' + html.length);
   out.push('MS Office detected: ' + isMsOffice);
@@ -105,18 +176,23 @@ document.getElementById('pasteTarget').addEventListener('paste', (e) => {
     out.push(prefix + ' line ' + i + ': firstChar="' + fc + '" ' + hex + ' matched=' + matched);
   });
 
-  document.getElementById('output').textContent = out.join('\n');
+  return out.join('\n');
+}
 
-  lastPasteData = {
+document.getElementById('pasteTarget').addEventListener('paste', (e) => {
+  e.preventDefault();
+  const html = e.clipboardData?.getData('text/html') || '';
+  const text = e.clipboardData?.getData('text/plain') || '';
+  const clipboardTypes = [...(e.clipboardData?.types || [])].join(', ') || '(none)';
+
+  populateFromData({
     timestamp: new Date().toISOString(),
-    clipboardTypes: types,
+    clipboardTypes,
     plainText: text,
     plainTextLength: text.length,
-    html: html,
+    html,
     htmlLength: html.length,
-    isMsOffice,
-    analysis: out.join('\n'),
-  };
-  document.getElementById('downloadJson').disabled = false;
-  document.getElementById('copyJson').disabled = false;
+    isMsOffice: html.includes('urn:schemas-microsoft-com:office'),
+    analysis: buildAnalysis(text, html, clipboardTypes),
+  });
 });

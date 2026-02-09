@@ -5,34 +5,43 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Paste debug – clipboard char inspector</title>
   <style>
-    body { font-family: system-ui; padding: 20px; max-width: 800px; }
+    body { font-family: system-ui; margin: 0; padding: 20px; max-width: 800px; }
     #pasteTarget { border: 1px solid #ccc; min-height: 120px; padding: 12px; margin: 12px 0; width: 100%; resize: vertical; box-sizing: border-box; }
     .well { font-family: monospace; font-size: 12px; white-space: pre-wrap; background: #f5f5f5; border: 1px solid #ddd; padding: 12px; margin: 8px 0; border-radius: 4px; overflow-x: auto; max-height: 300px; overflow-y: auto; }
-    #htmlRendered { min-height: 120px; width: 100%; display: block; }
-    #downloadJson, #copyJson, #clear { padding: 8px 14px; border: 1px solid #ccc; border-radius: 4px; background: #f5f5f5; cursor: pointer; font-size: 14px; }
-    #downloadJson:hover:not(:disabled), #copyJson:hover:not(:disabled), #clear:hover { background: #e8e8e8; }
+    #htmlRendered { min-height: 120px; width: 100%; max-width: 100%; min-width: 0; display: block; box-sizing: border-box; }
+    #htmlRendered.empty { min-height: 0; height: 38px; }
+    #downloadJson, #copyJson, #importJson, #clear { padding: 8px 14px; border: 1px solid #ccc; border-radius: 4px; background: #f5f5f5; cursor: pointer; font-size: 14px; }
+    #downloadJson:hover:not(:disabled), #copyJson:hover:not(:disabled), #importJson:hover, #clear:hover { background: #e8e8e8; }
     #downloadJson:disabled, #copyJson:disabled { opacity: 0.5; cursor: not-allowed; }
-    #downloadJson, #copyJson, #clear { margin-right: 8px; }
+    .button-row { display: flex; flex-wrap: wrap; gap: 8px; }
   </style>
 </head>
 <body>
   <h1>Paste debug</h1>
   <p>Paste from any app (Outlook, Word, etc.) in the box below. Character analysis will appear under it.</p>
   <textarea id="pasteTarget" placeholder="Paste here…"></textarea>
-  <p>
+  <div class="button-row">
     <button id="downloadJson" type="button" disabled>Download JSON</button>
     <button id="copyJson" type="button" disabled>Copy JSON</button>
+    <button id="importJson" type="button">Import JSON</button>
+    <input id="importFile" type="file" accept=".json,application/json" hidden>
     <button id="clear" type="button">Clear</button>
-  </p>
-  <h2>Pasted content</h2>
-  <h3>Plain text</h3>
-  <pre id="pastPlain" class="well">(paste to see)</pre>
-  <h3>HTML (raw)</h3>
-  <pre id="pastHtml" class="well">(paste to see)</pre>
-  <h3>HTML (rendered)</h3>
-  <iframe id="htmlRendered" class="well" sandbox="allow-same-origin" title="Rendered HTML preview"></iframe>
-  <h2>Clipboard analysis</h2>
-  <pre id="output" class="well">(paste to see)</pre>
+  </div>
+  <section aria-labelledby="past-heading">
+    <h2 id="past-heading">Pasted content</h2>
+    <h3>Plain text</h3>
+    <pre id="pastPlain" class="well">(paste to see)</pre>
+    <h3>HTML (raw)</h3>
+    <pre id="pastHtml" class="well">(paste to see)</pre>
+    <h3>HTML (structure)</h3>
+    <pre id="pastHtmlTree" class="well">(paste to see)</pre>
+    <h3>HTML (rendered)</h3>
+    <iframe id="htmlRendered" class="well empty" sandbox="allow-same-origin" title="Rendered HTML preview"></iframe>
+  </section>
+  <section aria-labelledby="analysis-heading">
+    <h2 id="analysis-heading">Clipboard analysis</h2>
+    <pre id="output" class="well">(paste to see)</pre>
+  </section>
 
   <script src="paste-debug.js"></script>
 </body>
