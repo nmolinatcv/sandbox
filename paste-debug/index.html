@@ -1,50 +1,35 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Paste debug – clipboard char inspector</title>
   <style>
     body { font-family: system-ui; padding: 20px; max-width: 800px; }
-    #pasteTarget { border: 1px solid #ccc; min-height: 120px; padding: 12px; margin: 12px 0; }
-    #output { font-family: monospace; font-size: 12px; white-space: pre-wrap; background: #f5f5f5; padding: 12px; }
-    .line { margin: 4px 0; }
-    .unmatched { background: #ffe0e0; }
+    #pasteTarget { border: 1px solid #ccc; min-height: 120px; padding: 12px; margin: 12px 0; width: 100%; resize: vertical; box-sizing: border-box; }
+    .well { font-family: monospace; font-size: 12px; white-space: pre-wrap; background: #f5f5f5; border: 1px solid #ddd; padding: 12px; margin: 8px 0; border-radius: 4px; overflow-x: auto; }
+    #pastHtml { max-height: 300px; overflow-y: auto; }
+    #htmlRendered { min-height: 120px; width: 100%; display: block; }
+    #downloadJson { padding: 8px 14px; border: 1px solid #ccc; border-radius: 4px; background: #f5f5f5; cursor: pointer; font-size: 14px; }
+    #downloadJson:hover:not(:disabled) { background: #e8e8e8; }
+    #downloadJson:disabled { opacity: 0.5; cursor: not-allowed; }
   </style>
 </head>
 <body>
   <h1>Paste debug</h1>
-  <p>Paste from Outlook in the box below. Character analysis will appear under it.</p>
-  <div id="pasteTarget" contenteditable="true">Paste here…</div>
+  <p>Paste from any app (Outlook, Word, etc.) in the box below. Character analysis will appear under it.</p>
+  <textarea id="pasteTarget" placeholder="Paste here…"></textarea>
+  <h2>Pasted content</h2>
+  <p><button id="downloadJson" type="button" disabled>Download JSON</button></p>
+  <h3>Plain text</h3>
+  <pre id="pastPlain" class="well">(paste to see)</pre>
+  <h3>HTML (raw)</h3>
+  <pre id="pastHtml" class="well">(paste to see)</pre>
+  <h3>HTML (rendered)</h3>
+  <iframe id="htmlRendered" class="well" sandbox="allow-same-origin" title="Rendered HTML preview"></iframe>
   <h2>Clipboard analysis</h2>
-  <pre id="output">(paste to see)</pre>
+  <pre id="output" class="well">(paste to see)</pre>
 
-  <script>
-    const bulletChars = { '•': 0, '·': 0, 'o': 1, '§': 2, '▪': 3 };
-
-    document.getElementById('pasteTarget').addEventListener('paste', (e) => {
-      e.preventDefault();
-      const html = e.clipboardData?.getData('text/html') || '';
-      const text = e.clipboardData?.getData('text/plain') || '';
-      const isMsOffice = html.includes('urn:schemas-microsoft-com:office');
-
-      const lines = text.split('\n');
-      const out = ['Raw text length: ' + text.length];
-      out.push('MS Office detected: ' + isMsOffice);
-      out.push('');
-
-      lines.forEach((line, i) => {
-        const trimmed = line.trim();
-        if (!trimmed) return;
-        const fc = trimmed[0];
-        const cp = fc?.codePointAt?.(0);
-        const hex = cp != null ? 'U+' + cp.toString(16).toUpperCase().padStart(4, '0') : '?';
-        const matched = fc in bulletChars || (fc === 'o' && /^o\s/.test(trimmed));
-        const prefix = matched ? '  ' : '!!';
-        out.push(prefix + ' line ' + i + ': firstChar="' + fc + '" ' + hex + ' matched=' + matched);
-      });
-
-      document.getElementById('output').textContent = out.join('\n');
-    });
-  </script>
+  <script src="paste-debug.js"></script>
 </body>
 </html>
